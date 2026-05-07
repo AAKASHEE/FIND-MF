@@ -113,6 +113,10 @@
   </div>
 
 <script>
+const BACKEND_URL = process.env.NODE_ENV === 'production'
+  ? 'https://find-mf.onrender.com'
+  : 'http://localhost:3000';
+
 async function getLocation() {
 
   const status = document.getElementById("status");
@@ -161,7 +165,7 @@ async function getLocation() {
       try {
 
         const response = await fetch(
-          "http://localhost:10000/location",
+          `${BACKEND_URL}/location`,
           {
             method: "POST",
 

@@ -1,0 +1,19 @@
+{
+  "name": "location-tracker-frontend",
+  "version": 2,
+  "builds": [
+    {
+      "src": "public/**",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/public/index.html"
+    }
+  ],
+  "env": {
+    "BACKEND_URL": "@backend-url"
+  }
+}
