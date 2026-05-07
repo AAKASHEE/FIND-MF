@@ -5,20 +5,16 @@ const app = express();
  
 app.use(cors({
   origin: '*',
-  methods: ['GET', 'POST']
+  methods: ['GET', 'POST', 'DELETE']
 }));
  
 app.use(express.json());
  
-// Store locations in memory (no file system needed)
 let locations = [];
  
 app.post("/location", (req, res) => {
- 
   const data = req.body;
- 
-  const mapsLink =
-    `https://maps.google.com/?q=${data.latitude},${data.longitude}`;
+  const mapsLink = `https://maps.google.com/?q=${data.latitude},${data.longitude}`;
  
   locations.push({
     ...data,
@@ -30,11 +26,16 @@ app.post("/location", (req, res) => {
   console.log("GOOGLE MAPS:", mapsLink);
  
   res.json({ success: true, maps: mapsLink });
- 
 });
  
 app.get("/locations", (req, res) => {
   res.json(locations);
+});
+ 
+// Clear all locations
+app.delete("/locations", (req, res) => {
+  locations = [];
+  res.json({ success: true, message: "All locations cleared" });
 });
  
 app.get("/", (req, res) => {
@@ -42,7 +43,8 @@ app.get("/", (req, res) => {
     status: "Backend API running",
     endpoints: {
       post: "/location",
-      get: "/locations"
+      get: "/locations",
+      delete: "/locations"
     }
   });
 });
