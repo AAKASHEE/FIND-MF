@@ -32,7 +32,12 @@ app.get("/locations", (req, res) => {
   res.json(locations);
 });
  
-// Clear all locations
+// Clear all locations via browser
+app.get("/locations/clear", (req, res) => {
+  locations = [];
+  res.json({ success: true, message: "All locations cleared" });
+});
+ 
 app.delete("/locations", (req, res) => {
   locations = [];
   res.json({ success: true, message: "All locations cleared" });
@@ -44,7 +49,7 @@ app.get("/", (req, res) => {
     endpoints: {
       post: "/location",
       get: "/locations",
-      delete: "/locations"
+      clear: "/locations/clear"
     }
   });
 });
