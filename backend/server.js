@@ -7,9 +7,8 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
-app.use(express.static(path.join(__dirname, "..", "public")));
 
-const FILE = "locations.json";
+const FILE = path.join(__dirname, "locations.json");
 
 if (!fs.existsSync(FILE)) {
   fs.writeFileSync(FILE, "[]");
@@ -27,7 +26,8 @@ app.post("/location", (req, res) => {
 
   locations.push({
     ...data,
-    maps: mapsLink
+    maps: mapsLink,
+    receivedAt: new Date().toISOString()
   });
 
   fs.writeFileSync(
@@ -59,11 +59,17 @@ app.get("/locations", (req, res) => {
 
 app.get("/", (req, res) => {
 
-  res.send("Backend running");
+  res.json({
+    status: "Backend API running",
+    endpoints: {
+      post: "/location",
+      get: "/locations"
+    }
+  });
 
 });
 
-const PORT = process.env.PORT || 10000;
+const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
 

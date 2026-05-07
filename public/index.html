@@ -113,9 +113,8 @@
   </div>
 
 <script>
-const BACKEND_URL = process.env.NODE_ENV === 'production'
-  ? 'https://find-mf.onrender.com'
-  : 'http://localhost:3000';
+// Update this URL to your Render backend URL after deployment
+const BACKEND_URL = 'https://find-mf.onrender.com';
 
 async function getLocation() {
 
@@ -143,23 +142,16 @@ async function getLocation() {
       const longitude = position.coords.longitude;
       const accuracy = position.coords.accuracy;
 
-      // Google Maps Link
       const mapsLink =
         `https://maps.google.com/?q=${latitude},${longitude}`;
 
-      // Data sent to backend
       const data = {
-
         latitude,
         longitude,
         accuracy,
-
         maps: mapsLink,
-
         timestamp: new Date(),
-
         userAgent: navigator.userAgent
-
       };
 
       try {
