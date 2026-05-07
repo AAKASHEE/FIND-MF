@@ -75,4 +75,10 @@ app.listen(PORT, () => {
 
   console.log(`Server running on port ${PORT}`);
 
+  app.use(cors({
+  origin: ['https://zomato-hiring.vercel.app', 'http://localhost:3000'],
+  methods: ['GET', 'POST']
+}));
+
 });
+
