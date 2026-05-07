@@ -5,9 +5,8 @@ const path = require("path");
  
 const app = express();
  
-// ✅ CORS must be configured BEFORE routes, not inside app.listen()
 app.use(cors({
-  origin: ['https://zomato-hiring.vercel.app', 'http://localhost:3000', 'https://find-mf.onrender.com'],
+  origin: '*',
   methods: ['GET', 'POST']
 }));
  
@@ -15,8 +14,23 @@ app.use(express.json());
  
 const FILE = path.join(__dirname, "locations.json");
  
-if (!fs.existsSync(FILE)) {
-  fs.writeFileSync(FILE, "[]");
+// Safe helper to read locations
+function readLocations() {
+  try {
+    if (!fs.existsSync(FILE)) {
+      fs.writeFileSync(FILE, "[]");
+      return [];
+    }
+    const raw = fs.readFileSync(FILE, "utf8").trim();
+    if (!raw || raw === "") {
+      fs.writeFileSync(FILE, "[]");
+      return [];
+    }
+    return JSON.parse(raw);
+  } catch (e) {
+    fs.writeFileSync(FILE, "[]");
+    return [];
+  }
 }
  
 app.post("/location", (req, res) => {
@@ -26,8 +40,7 @@ app.post("/location", (req, res) => {
   const mapsLink =
     `https://maps.google.com/?q=${data.latitude},${data.longitude}`;
  
-  const locations =
-    JSON.parse(fs.readFileSync(FILE));
+  const locations = readLocations();
  
   locations.push({
     ...data,
@@ -35,35 +48,21 @@ app.post("/location", (req, res) => {
     receivedAt: new Date().toISOString()
   });
  
-  fs.writeFileSync(
-    FILE,
-    JSON.stringify(locations, null, 2)
-  );
+  fs.writeFileSync(FILE, JSON.stringify(locations, null, 2));
  
-  console.log("LOCATION RECEIVED:");
-  console.log(data);
+  console.log("LOCATION RECEIVED:", data);
+  console.log("GOOGLE MAPS:", mapsLink);
  
-  console.log("GOOGLE MAPS:");
-  console.log(mapsLink);
- 
-  res.json({
-    success: true,
-    maps: mapsLink
-  });
+  res.json({ success: true, maps: mapsLink });
  
 });
  
 app.get("/locations", (req, res) => {
- 
-  const locations =
-    JSON.parse(fs.readFileSync(FILE));
- 
+  const locations = readLocations();
   res.json(locations);
- 
 });
  
 app.get("/", (req, res) => {
- 
   res.json({
     status: "Backend API running",
     endpoints: {
@@ -71,7 +70,6 @@ app.get("/", (req, res) => {
       get: "/locations"
     }
   });
- 
 });
  
 const PORT = process.env.PORT || 3000;
@@ -79,4 +77,3 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
- 
